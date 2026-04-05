@@ -1,45 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Ứng dụng DevOps</title>
+    <title>DevOps Mini Project</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 40px;
+        background: #f5f5f5;
+      }
+      h1 {
+        color: #333;
+      }
+      .box {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      input {
+        padding: 8px;
+        width: 200px;
+      }
+      button {
+        padding: 8px 15px;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+      li {
+        margin: 5px 0;
+      }
+    </style>
   </head>
+
   <body>
-    <h1>📋 Danh sách người dùng</h1>
+    <h1>🚀 DevOps Mini Project</h1>
 
-    <input id="name" placeholder="Nhập tên..." />
-    <button onclick="addUser()">Thêm</button>
+    <div class="box">
+      <h2>📌 Thông tin sinh viên</h2>
+      <p><b>Họ tên:</b> Minh Hòa</p>
+      <p><b>MSSV:</b> 123456</p>
+      <p><b>Lớp:</b> CNTT</p>
+    </div>
 
-    <ul id="list"></ul>
+    <div class="box">
+      <h2>❤️ Health Check</h2>
+      <button onclick="checkHealth()">Kiểm tra</button>
+      <p id="health"></p>
+    </div>
+
+    <div class="box">
+      <h2>👥 Quản lý Users</h2>
+
+      <input id="name" placeholder="Nhập tên" />
+      <button onclick="addUser()">Thêm</button>
+
+      <ul id="list"></ul>
+    </div>
 
     <script>
-      const API = "http://localhost:5000";
+      const API = window.location.hostname.includes("github.dev")
+        ? "https://" + window.location.host.replace("8080", "3000")
+        : "http://localhost:3000";
 
-      async function loadUsers() {
-        const res = await fetch(API + "/users");
-        const data = await res.json();
+      // Load users
+      function loadUsers() {
+        fetch(API + "/users")
+          .then((res) => res.json())
+          .then((data) => {
+            const list = document.getElementById("list");
+            list.innerHTML = "";
+            data.forEach((u) => {
+              list.innerHTML += `<li>${u.name}</li>`;
+            });
+          });
+      }
 
-        const list = document.getElementById("list");
-        list.innerHTML = "";
-
-        data.forEach((u) => {
-          list.innerHTML += `<li>${u.name}</li>`;
+      // Add user
+      function addUser() {
+        const name = document.getElementById("name").value;
+        fetch(API + "/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        }).then(() => {
+          document.getElementById("name").value = "";
+          loadUsers();
         });
       }
 
-      async function addUser() {
-        const name = document.getElementById("name").value;
-
-        await fetch(API + "/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name }),
-        });
-
-        document.getElementById("name").value = "";
-        loadUsers();
+      // Health check
+      function checkHealth() {
+        fetch(API + "/health")
+          .then((res) => res.json())
+          .then((data) => {
+            document.getElementById("health").innerText =
+              "Status: " + data.status;
+          });
       }
 
       loadUsers();

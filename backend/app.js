@@ -11,23 +11,28 @@ const PORT = process.env.PORT || 3000;
 
 // Kết nối DB
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,
+  host: process.env.DB_HOST || "localhost",
   user: "root",
   password: "root",
   database: "testdb",
 });
 
 db.connect((err) => {
-  if (err) console.log("DB Error:", err);
-  else console.log("Connected MySQL");
+  if (err) {
+    console.log("DB Error:", err);
+  } else {
+    console.log("Connected MySQL");
+  }
 });
 
-// 👉 Health
+// ================= API =================
+
+// Health check
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// 👉 About
+// About
 app.get("/about", (req, res) => {
   res.json({
     name: "Minh Hoa",
@@ -36,23 +41,33 @@ app.get("/about", (req, res) => {
   });
 });
 
-// 👉 Get users
+// Get users
 app.get("/users", (req, res) => {
   db.query("SELECT * FROM users", (err, result) => {
-    if (err) return res.send(err);
+    if (err) {
+      return res.status(500).json({ error: err });
+    }
     res.json(result);
   });
 });
 
-// 👉 Add user
+// Add user
 app.post("/users", (req, res) => {
   const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ message: "Name is required" });
+  }
+
   db.query("INSERT INTO users(name) VALUES(?)", [name], (err) => {
-    if (err) return res.send(err);
-    res.json({ message: "Added" });
+    if (err) {
+      return res.status(500).json({ error: err });
+    }
+    res.json({ message: "Added successfully" });
   });
 });
 
+// ================= START SERVER =================
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
 });

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ứng dụng DevOps</title>
+  </head>
+  <body>
+    <h1>📋 Danh sách người dùng</h1>
+
+    <input id="name" placeholder="Nhập tên..." />
+    <button onclick="addUser()">Thêm</button>
+
+    <ul id="list"></ul>
+
+    <script>
+      const API = "http://localhost:5000";
+
+      async function loadUsers() {
+        const res = await fetch(API + "/users");
+        const data = await res.json();
+
+        const list = document.getElementById("list");
+        list.innerHTML = "";
+
+        data.forEach((u) => {
+          list.innerHTML += `<li>${u.name}</li>`;
+        });
+      }
+
+      async function addUser() {
+        const name = document.getElementById("name").value;
+
+        await fetch(API + "/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name }),
+        });
+
+        document.getElementById("name").value = "";
+        loadUsers();
+      }
+
+      loadUsers();
+    </script>
+  </body>
+</html>
